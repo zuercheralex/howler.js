@@ -1,5 +1,5 @@
 /*!
- *  howler.js v2.2.3
+ *  howler.js v2.2.4
  *  howlerjs.com
  *
  *  (c) 2013-2020, James Simpson of GoldFire Studios
@@ -996,6 +996,12 @@
           };
           node.addEventListener(Howler._canPlayEvent, listener, false);
 
+          // the node is not actually playing (has received suspend event & NETWORK_IDLE)
+          if (node.networkState === 1 && node._wasSuspended) {
+            console.log('wake up suspended audio node')
+            node.play()
+          }
+
           // Cancel the end timer.
           self._clearTimer(sound._id);
         }
@@ -1766,6 +1772,8 @@
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
           sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
+          sounds[i]._node.removeEventListener('loadedmetadata', sounds[i]._loadFn, false);
+          sounds[i]._node.removeEventListener('suspend', setAudioNodeWasSuspendedFromEvent, false);
           sounds[i]._node.removeEventListener('ended', sounds[i]._endFn, false);
 
           // Release the Audio object back to the pool.
@@ -2267,6 +2275,11 @@
         self._loadFn = self._loadListener.bind(self);
         self._node.addEventListener(Howler._canPlayEvent, self._loadFn, false);
 
+        // sometimes canplaythrough does not fire if the audio node is suspended (see below)
+        // so we make extra sure to kick off the event queue here
+        // TODO: this could have side effects beyond the _wasSuspended mitigation...
+        self._node.addEventListener('loadedmetadata', self._loadFn, false);
+
         // Listen for the 'ended' event on the sound to account for edge-case where
         // a finite sound has a duration of Infinity.
         self._endFn = self._endListener.bind(self);
@@ -2276,6 +2289,10 @@
         self._node.src = parent._src;
         self._node.preload = parent._preload === true ? 'auto' : parent._preload;
         self._node.volume = volume * Howler.volume();
+
+        // we record the suspend event with a dirty param in case we need to mitigate it later
+        self._node._wasSuspended = false
+        self._node.addEventListener('suspend', setAudioNodeWasSuspendedFromEvent, false)
 
         // Begin loading the source.
         self._node.load();
@@ -2343,8 +2360,9 @@
         parent._loadQueue();
       }
 
-      // Clear the event listener.
+      // Clear the event listeners
       self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
+      self._node.removeEventListener('loadedmetadata', self._loadFn, false);
     },
 
     /**
@@ -2508,6 +2526,10 @@
       self._loadQueue();
     }
   };
+
+  var setAudioNodeWasSuspendedFromEvent = function(evt) {
+    evt.target._wasSuspended = true
+  }
 
   /**
    * Setup the audio context when available, or switch to HTML5 Audio mode.
