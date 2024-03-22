@@ -28,6 +28,8 @@
      * @return {Howler}
      */
     init: function() {
+      console.log('INIT');
+
       var self = this || Howler;
 
       // Create a global ID counter.
