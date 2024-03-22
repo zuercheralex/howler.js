@@ -994,10 +994,10 @@
           node.addEventListener(Howler._canPlayEvent, listener, false);
 
           // the node is not actually playing (has received suspend event & NETWORK_IDLE)
-          if (node.networkState === 1 && node._wasSuspended) {
-            console.log('wake up suspended audio node')
-            node.play()
-          }
+          // if (node.networkState === 1 && node._wasSuspended) {
+          //   console.log('wake up suspended audio node')
+          //   node.play()
+          // }
 
           // Cancel the end timer.
           self._clearTimer(sound._id);
@@ -1770,7 +1770,7 @@
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
           sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
           sounds[i]._node.removeEventListener('loadedmetadata', sounds[i]._loadFn, false);
-          sounds[i]._node.removeEventListener('suspend', setAudioNodeWasSuspendedFromEvent, false);
+          // sounds[i]._node.removeEventListener('suspend', setAudioNodeWasSuspendedFromEvent, false);
           sounds[i]._node.removeEventListener('ended', sounds[i]._endFn, false);
 
           // Release the Audio object back to the pool.
@@ -2288,8 +2288,8 @@
         self._node.volume = volume * Howler.volume();
 
         // we record the suspend event with a dirty param in case we need to mitigate it later
-        self._node._wasSuspended = false
-        self._node.addEventListener('suspend', setAudioNodeWasSuspendedFromEvent, false)
+        // self._node._wasSuspended = false
+        // self._node.addEventListener('suspend', setAudioNodeWasSuspendedFromEvent, false)
 
         // Begin loading the source.
         self._node.load();
@@ -2524,9 +2524,9 @@
     }
   };
 
-  var setAudioNodeWasSuspendedFromEvent = function(evt) {
-    evt.target._wasSuspended = true
-  }
+  // var setAudioNodeWasSuspendedFromEvent = function(evt) {
+  //   evt.target._wasSuspended = true
+  // }
 
   /**
    * Setup the audio context when available, or switch to HTML5 Audio mode.
