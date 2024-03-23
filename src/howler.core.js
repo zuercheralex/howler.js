@@ -1771,8 +1771,9 @@
           // Remove any event listeners.
           sounds[i]._node.removeEventListener('error', sounds[i]._errorFn, false);
           sounds[i]._node.removeEventListener(Howler._canPlayEvent, sounds[i]._loadFn, false);
-          sounds[i]._node.removeEventListener('loadedmetadata', sounds[i]._loadFn, false);
+          // sounds[i]._node.removeEventListener('loadedmetadata', sounds[i]._loadFn, false);
           // sounds[i]._node.removeEventListener('suspend', setAudioNodeWasSuspendedFromEvent, false);
+          sounds[i]._node.removeEventListener('loadstart', sounds[i]._loadFn, false);
           sounds[i]._node.removeEventListener('ended', sounds[i]._endFn, false);
 
           // Release the Audio object back to the pool.
@@ -2277,7 +2278,8 @@
         // sometimes canplaythrough does not fire if the audio node is suspended (see below)
         // so we make extra sure to kick off the event queue here
         // TODO: this could have side effects beyond the _wasSuspended mitigation...
-        self._node.addEventListener('loadedmetadata', self._loadFn, false);
+        // self._node.addEventListener('loadedmetadata', self._loadFn, false);
+        self._node.addEventListener('loadstart', self._loadFn, false);
 
         // Listen for the 'ended' event on the sound to account for edge-case where
         // a finite sound has a duration of Infinity.
@@ -2361,7 +2363,8 @@
 
       // Clear the event listeners
       self._node.removeEventListener(Howler._canPlayEvent, self._loadFn, false);
-      self._node.removeEventListener('loadedmetadata', self._loadFn, false);
+      // self._node.removeEventListener('loadedmetadata', self._loadFn, false);
+      self._node.removeEventListener('loadstart', self._loadFn, false);
     },
 
     /**
