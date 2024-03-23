@@ -28,7 +28,7 @@
      * @return {Howler}
      */
     init: function() {
-      console.log('INIT');
+      console.log('INIT NEW');
 
       var self = this || Howler;
 
